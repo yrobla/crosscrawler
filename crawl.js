@@ -2,7 +2,7 @@
 const axios = require("axios");
 const cheerio = require("cheerio");
 const fastq = require("fastq").promise;
-const program = require('commander');
+const { program } = require('commander');
 const { URL } = require("url");
 const urlmodule = require("valid-url");
 
@@ -37,13 +37,14 @@ async function worker(item) {
     // collect all links
     const links = $("a");
     links.each((index, item) => {
-      const url =item.attribs["href"];
+      let url =item.attribs["href"];
       if (r.test(url)) {
         const parsedURL = new URL(url);
         if (parsedURL.hostname==mainURL.hostname) {
+          url = url.split(/[?#]/)[0];
+
           if (!visited.includes(url)) {
             // split query and hash, and add it
-            url = url.split(/[?#]/)[0];
             queue.push(url);
             visited.push(url);
           }
@@ -53,9 +54,9 @@ async function worker(item) {
           let parsedURL = "";
           if (url[0]=="/") parsedURL = mainURL.protocol+"//"+mainURL.hostname+url;
           else parsedURL = mainURL.protocol+"//"+mainURL.hostname+"/"+url;
+          parsedURL = parsedURL.split(/[?#]/)[0];            
 
           if (!visited.includes(parsedURL)) {
-            parsedURL = parsedURL.split(/[?#]/)[0];            
             queue.push(parsedURL);
             visited.push(parsedURL);
           }
